@@ -1,6 +1,5 @@
 package com.example.petshopper.features.auth.presentation.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.petshopper.core.util.constants.state.UiState
 import com.example.petshopper.features.auth.domain.usecase.LoginUseCase
@@ -10,20 +9,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
-import com.example.petshopper.core.data.AuthDataStore
 import com.example.petshopper.core.domain.model.UserModel
 import com.example.petshopper.features.auth.data.dto.LoginRequestDto
 import com.example.petshopper.features.auth.data.dto.LogoutRequestDto
-import com.example.petshopper.features.auth.data.mapper.LoginMapper
+import com.example.petshopper.features.auth.domain.usecase.CheckLoginStatusUseCase
+import com.example.petshopper.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.example.petshopper.features.auth.domain.usecase.LogoutUseCase
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val logoutUseCase: LogoutUseCase,
-    @param:ApplicationContext private val context: Context
+    private val checkLoginStatusUseCase: CheckLoginStatusUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginUiState>(UiState.Initial)
@@ -41,13 +40,11 @@ class AuthViewModel @Inject constructor(
 
     private fun checkLoginStatus() {
         viewModelScope.launch {
-            val jwt = AuthDataStore.getJwt(context = context)
-            _isLoggedIn.value = !jwt.isNullOrEmpty()
+            _isLoggedIn.value = checkLoginStatusUseCase()
 
             // Load user data if logged in
             if (_isLoggedIn.value == true) {
-                val user = AuthDataStore.getUser(context = context)
-                _currentUser.value = user
+                _currentUser.value = getCurrentUserUseCase()
             }
         }
     }
@@ -56,6 +53,7 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _loginState.value = UiState.Loading
             try {
+                // Use case handles API call + saving auth data
                 val response = loginUseCase(
                     LoginRequestDto(
                         email = email,
@@ -63,14 +61,8 @@ class AuthViewModel @Inject constructor(
                     )
                 )
 
-                // Map DTO to UserModel
-                val loggedInUser : UserModel = LoginMapper.toUserEntity(response)
-
-                // Save JWT token and user data
-                AuthDataStore.saveJwt(context = context, token = response.jwtToken)
-                AuthDataStore.saveUser(context = context, user = loggedInUser)
-
-                _currentUser.value = loggedInUser
+                // Update UI state
+                _currentUser.value = getCurrentUserUseCase()
                 _isLoggedIn.value = true
                 _loginState.value = UiState.Success(response)
             } catch (ex: Exception) {
@@ -81,35 +73,17 @@ class AuthViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
-            try {
-                val response = logoutUseCase(
-                    LogoutRequestDto(
-                        uuid = _currentUser.value?.uuid
-                    )
+            // Use case handles API call + clearing auth data
+            logoutUseCase(
+                LogoutRequestDto(
+                    uuid = _currentUser.value?.uuid
                 )
+            )
 
-                if (response.isSuccessful && response.code() == 204) {
-                    android.util.Log.d("AuthViewModel", "Logout successful for user with uuid : " + _currentUser.value?.uuid)
-                } else {
-                    android.util.Log.w(
-                        "AuthViewModel",
-                        "Logout returned unexpected status: ${response.code()} - ${response.message()}"
-                    )
-                }
-            } catch (e: Exception) {
-                // Log error but still proceed with local logout
-                android.util.Log.e(
-                    "AuthViewModel",
-                    "Logout API call failed: ${e.message}",
-                    e
-                )
-            } finally {
-                // Always clear local data regardless of API response
-                AuthDataStore.clear(context = context)
-                _currentUser.value = null
-                _isLoggedIn.value = false
-                _loginState.value = UiState.Initial
-            }
+            // Update UI state
+            _currentUser.value = null
+            _isLoggedIn.value = false
+            _loginState.value = UiState.Initial
         }
     }
 
