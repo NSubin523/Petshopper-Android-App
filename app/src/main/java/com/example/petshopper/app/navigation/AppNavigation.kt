@@ -22,18 +22,14 @@ fun AppNavigation(
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
-    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val authState by authViewModel.state.collectAsState()
 
     // Handle initial navigation based on login state
-    LaunchedEffect(isLoggedIn) {
-        when (isLoggedIn) {
-            true -> navController.navigate(Screen.Home.route) {
+    LaunchedEffect(authState.isLoggedIn) {
+        if (authState.isLoggedIn) {
+            navController.navigate(Screen.Home.route) {
                 popUpTo(Screen.Login.route) { inclusive = true }
             }
-            false -> navController.navigate(Screen.Login.route) {
-                popUpTo(0) { inclusive = true }
-            }
-            null -> {} // Still checking, do nothing
         }
     }
 

@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.petshopper.features.auth.presentation.action.AuthAction
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -19,7 +20,7 @@ fun HomeScreen(
     authViewModel: AuthViewModel,
     onLogout: () -> Unit
 ) {
-    val currentUser by authViewModel.currentUser.collectAsState()
+    val authState by authViewModel.state.collectAsState()
 
     Scaffold(
         topBar = {
@@ -27,7 +28,7 @@ fun HomeScreen(
                 title = { Text("Pet Shopper") },
                 actions = {
                     IconButton(onClick = {
-                        authViewModel.logout()
+                        authViewModel.onAction(AuthAction.Logout)
                         onLogout()
                     }) {
                         Icon(
@@ -56,7 +57,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = currentUser?.firstName ?: "User",
+                    text = authState.currentUser?.firstName ?: "User",
                     style = MaterialTheme.typography.displayMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary

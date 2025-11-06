@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.example.petshopper.core.util.constants.state.UiState
+import com.example.petshopper.features.auth.presentation.action.AuthAction
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 
 @Composable
@@ -42,17 +43,17 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onSignUpClick: () -> Unit,
 ) {
-    val uiState by authViewModel.loginState.collectAsState()
+    val authState by authViewModel.state.collectAsState()
     val context = LocalContext.current
 
     // Handle login success
-    LaunchedEffect(uiState) {
-        when (val state = uiState) {
+    LaunchedEffect(authState.loginState) {
+        when (val state = authState.loginState) {
             is UiState.Success -> {
                 Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
                 onLoginSuccess()
                 // Reset state after navigation
-                authViewModel.resetLoginState()
+                authViewModel.onAction(AuthAction.ResetLoginState)
             }
             is UiState.Error -> {
                 Toast.makeText(context, "Login failed: ${state.message}", Toast.LENGTH_LONG).show()
@@ -70,9 +71,9 @@ fun LoginScreen(
             contentAlignment = Alignment.Center
         ) {
             LoginForm(
-                uiState = uiState,
+                uiState = authState.loginState,
                 onLogin = { email, password ->
-                    authViewModel.login(email = email, password = password)
+                    authViewModel.onAction(AuthAction.Login(email, password))
                 },
                 onSignUpClick = onSignUpClick
             )
