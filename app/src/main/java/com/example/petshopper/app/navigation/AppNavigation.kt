@@ -11,10 +11,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.petshopper.features.auth.presentation.screen.LoginScreen
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.petshopper.features.home.presentation.screen.HomeScreen
+import com.example.petshopper.features.register.presentation.screen.RegisterScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Home : Screen("home")
+    object Register : Screen("register")
 }
 
 @Composable
@@ -46,7 +48,17 @@ fun AppNavigation(
                     }
                 },
                 onSignUpClick = {
-                    // TODO: Navigate to sign up screen
+                    navController.navigate(Screen.Register.route)
+                }
+            )
+        }
+
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                onRegistrationComplete = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
                 }
             )
         }
