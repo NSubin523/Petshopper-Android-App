@@ -1,4 +1,4 @@
-package com.example.petshopper.features.home.presentation.screen
+package com.example.petshopper.features.bottomnavigation.home.presentation.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
