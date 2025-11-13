@@ -1,69 +1,78 @@
 package com.example.petshopper.features.bottomnavigation.home.presentation.screen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.petshopper.features.auth.presentation.action.AuthAction
-import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.petshopper.features.bottomnavigation.home.domain.model.Categories
+import com.example.petshopper.features.bottomnavigation.home.presentation.state.HomeAction
+import com.example.petshopper.features.bottomnavigation.home.presentation.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    authViewModel: AuthViewModel,
-    onLogout: () -> Unit
+    vm: HomeViewModel = hiltViewModel()
 ) {
-    val authState by authViewModel.state.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Pet Shopper") },
-                actions = {
-                    IconButton(onClick = {
-                        authViewModel.onAction(AuthAction.Logout)
-                        onLogout()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ExitToApp,
-                            contentDescription = "Logout"
-                        )
-                    }
-                }
+    val state by vm.state.collectAsState()
+
+    Column{
+        CategoryTabs(
+            categories = state.categories,
+            selectedId = state.selectedCategoryId,
+            onSelect = { id -> vm.onAction(HomeAction.SelectCategory(id)) }
+        )
+    }
+
+}
+
+@Composable
+fun CategoryTabs(
+    categories: List<Categories>,
+    selectedId: String?,
+    onSelect: (String) -> Unit
+) {
+    LazyRow(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(categories) { category ->
+            val isSelected = category.id == selectedId
+
+            CategoryTabItem(
+                text = category.type,
+                selected = isSelected,
+                onClick = { onSelect(category.id) }
             )
         }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(24.dp)
-            ) {
-                Text(
-                    text = "Welcome",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = authState.currentUser?.firstName ?: "User",
-                    style = MaterialTheme.typography.displayMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                )
-            }
-        }
+    }
+}
+
+@Composable
+fun CategoryTabItem(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val background = if (selected) Color.Black else Color.LightGray.copy(alpha = 0.3f)
+    val textColor = if (selected) Color.White else Color.Black
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(background)
+            .clickable { onClick() }
+            .padding(horizontal = 20.dp, vertical = 10.dp)
+    ) {
+        Text(text = text, color = textColor)
     }
 }

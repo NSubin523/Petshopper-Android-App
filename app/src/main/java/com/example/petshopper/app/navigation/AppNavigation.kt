@@ -64,14 +64,7 @@ fun AppNavigation(
         }
 
         composable(Screen.Home.route) {
-            HomeScreen(
-                authViewModel = authViewModel,
-                onLogout = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
-            )
+            HomeScreen()
         }
     }
 }
