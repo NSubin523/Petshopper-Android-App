@@ -1,4 +1,4 @@
-package com.example.petshopper.ui.theme
+package com.example.petshopper.common.type
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

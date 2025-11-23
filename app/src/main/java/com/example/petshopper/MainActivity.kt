@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.petshopper.app.navigation.AppNavigation
-import com.example.petshopper.ui.theme.PetshopperTheme
+import com.example.petshopper.common.themes.PetshopperTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

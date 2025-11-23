@@ -1,6 +1,5 @@
-package com.example.petshopper.ui.theme
+package com.example.petshopper.common.themes
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -10,6 +9,13 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import com.example.petshopper.common.colors.Pink40
+import com.example.petshopper.common.colors.Pink80
+import com.example.petshopper.common.colors.Purple40
+import com.example.petshopper.common.colors.Purple80
+import com.example.petshopper.common.colors.PurpleGrey40
+import com.example.petshopper.common.colors.PurpleGrey80
+import com.example.petshopper.common.type.Typography
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
