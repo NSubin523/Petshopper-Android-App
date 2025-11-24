@@ -1,4 +1,4 @@
-package com.example.petshopper.features.bottomnavigation.home.presentation.screen
+package com.example.petshopper.features.bottomnavigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.petshopper.core.util.constants.Constants
+import com.example.petshopper.features.bottomnavigation.home.presentation.screen.HomeScreen
 
 enum class BottomTab(val label: String, val icon: ImageVector) {
     Home(Constants.ScreenLabels.Home.toString(), Icons.Default.Home),
@@ -26,7 +27,7 @@ enum class BottomTab(val label: String, val icon: ImageVector) {
 }
 
 @Composable
-fun MainScreen() {
+fun LandingScreen() {
     var currentTab by remember { mutableStateOf(BottomTab.Home) }
 
     Scaffold(

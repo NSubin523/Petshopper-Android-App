@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.petshopper.features.auth.presentation.screen.LoginScreen
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
-import com.example.petshopper.features.bottomnavigation.home.presentation.screen.MainScreen
+import com.example.petshopper.features.bottomnavigation.LandingScreen
 import com.example.petshopper.features.register.presentation.screen.RegisterScreen
 
 sealed class Screen(val route: String) {
@@ -63,7 +63,7 @@ fun AppNavigation(
         }
 
         composable(Screen.Home.route) {
-            MainScreen()
+            LandingScreen()
         }
     }
 }

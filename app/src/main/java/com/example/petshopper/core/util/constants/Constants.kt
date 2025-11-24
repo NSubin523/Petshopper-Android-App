@@ -28,4 +28,21 @@ object Constants {
         PHONE,
         CONFIRM
     }
+
+    fun getSearchPlaceholder(categoryType: String): String {
+        return when (categoryType) {
+            "Dogs" -> "Search for your favorite dogs.."
+            "Cats" -> "Search for your favorite cats.."
+            "Birds" -> "Search for your favorite birds.."
+            "Reptiles" -> "Search for your favorite reptiles.."
+            "Turtles" -> "Search for your favorite turtles.."
+            else -> "Search for ${categoryType.lowercase()}.."
+        }
+    }
+
+    object EmptyInventoryMessages {
+        val title = "Uh oh! No pets found."
+        val subtitle = "Inventory is empty for this category.\nPlease check back again later."
+    }
+
 }
