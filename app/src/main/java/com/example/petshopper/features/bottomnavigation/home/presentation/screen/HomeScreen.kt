@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.petshopper.features.bottomnavigation.home.presentation.state.HomeAction
 import com.example.petshopper.features.bottomnavigation.home.presentation.viewmodel.HomeViewModel
 import com.example.petshopper.common.composables.CategoryTabs
@@ -24,7 +23,7 @@ import com.example.petshopper.core.util.constants.Constants
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    vm: HomeViewModel = hiltViewModel()
+    vm: HomeViewModel
 ) {
 
     val state by vm.state.collectAsState()

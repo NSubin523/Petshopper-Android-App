@@ -18,7 +18,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.petshopper.core.util.constants.Constants
+import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.petshopper.features.bottomnavigation.home.presentation.screen.HomeScreen
+import com.example.petshopper.features.bottomnavigation.home.presentation.viewmodel.HomeViewModel
+import com.example.petshopper.features.bottomnavigation.profile.presentation.screen.ProfileScreen
 
 enum class BottomTab(val label: String, val icon: ImageVector) {
     Home(Constants.ScreenLabels.Home.toString(), Icons.Default.Home),
@@ -27,7 +30,10 @@ enum class BottomTab(val label: String, val icon: ImageVector) {
 }
 
 @Composable
-fun LandingScreen() {
+fun LandingScreen(
+    authViewModel: AuthViewModel,
+    homeViewModel: HomeViewModel
+) {
     var currentTab by remember { mutableStateOf(BottomTab.Home) }
 
     Scaffold(
@@ -53,13 +59,18 @@ fun LandingScreen() {
     ) { innerPadding ->
         when (currentTab) {
             BottomTab.Home -> {
-                HomeScreen(modifier = Modifier.padding(innerPadding))
+                HomeScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    vm = homeViewModel
+                )
             }
             BottomTab.Cart -> {
                 Box(modifier = Modifier.padding(innerPadding)) { Text("Cart Coming Soon") }
             }
             BottomTab.Profile -> {
-                Box(modifier = Modifier.padding(innerPadding)) { Text("Profile Coming Soon") }
+                Box(modifier = Modifier.padding(innerPadding)) {
+                    ProfileScreen(authViewModel = authViewModel)
+                }
             }
         }
     }

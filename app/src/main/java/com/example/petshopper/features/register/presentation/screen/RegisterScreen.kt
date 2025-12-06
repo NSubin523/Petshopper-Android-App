@@ -15,7 +15,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.petshopper.core.util.constants.Constants
 import com.example.petshopper.core.util.constants.state.UiState
 import com.example.petshopper.features.register.data.dto.CreateUserRequestDto
@@ -25,7 +24,7 @@ import com.example.petshopper.features.register.presentation.viewmodel.CreateUse
 @OptIn(ExperimentalAnimatableApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun RegisterScreen(
-    viewModel: CreateUserViewModel = hiltViewModel(),
+    viewModel: CreateUserViewModel,
     onRegistrationComplete: () -> Unit = {}
 ) {
     val context = LocalContext.current

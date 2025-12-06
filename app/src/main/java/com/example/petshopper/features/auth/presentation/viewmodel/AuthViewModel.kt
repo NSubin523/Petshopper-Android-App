@@ -12,6 +12,7 @@ import com.example.petshopper.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.example.petshopper.features.auth.domain.usecase.LogoutUseCase
 import com.example.petshopper.features.auth.presentation.action.AuthAction
 import com.example.petshopper.features.auth.presentation.state.AuthUiState
+import kotlinx.coroutines.delay
 
 /**
  * ViewModel for Auth feature following MVI pattern
@@ -100,16 +101,18 @@ class AuthViewModel @Inject constructor(
      */
     private fun handleLogout() {
         launchAsync {
-            // Use case handles API call + clearing auth data
             logoutUseCase(
                 LogoutRequestDto(
                     uuid = currentState.currentUser?.uuid
                 )
             )
 
-            // Reset to initial state
+            updateState { it.copy(isLoading = true) }
+
+            delay(2000)
+
             updateState {
-                AuthUiState()
+                it.copy(isLoading = false, isLoggedIn = false)
             }
         }
     }

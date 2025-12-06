@@ -11,7 +11,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.petshopper.features.auth.presentation.screen.LoginScreen
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.petshopper.features.bottomnavigation.LandingScreen
+import com.example.petshopper.features.bottomnavigation.home.presentation.viewmodel.HomeViewModel
 import com.example.petshopper.features.register.presentation.screen.RegisterScreen
+import com.example.petshopper.features.register.presentation.viewmodel.CreateUserViewModel
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -21,7 +23,9 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun AppNavigation(
-    authViewModel: AuthViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    registerUserViewModel: CreateUserViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     val authState by authViewModel.state.collectAsState()
@@ -30,6 +34,14 @@ fun AppNavigation(
         if (authState.isLoggedIn) {
             navController.navigate(Screen.Home.route) {
                 popUpTo(Screen.Login.route) { inclusive = true }
+            }
+        } else {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+            if (currentRoute != Screen.Login.route && currentRoute != Screen.Register.route) {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
+                }
             }
         }
     }
@@ -54,6 +66,7 @@ fun AppNavigation(
 
         composable(Screen.Register.route) {
             RegisterScreen(
+                viewModel = registerUserViewModel,
                 onRegistrationComplete = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
@@ -63,7 +76,7 @@ fun AppNavigation(
         }
 
         composable(Screen.Home.route) {
-            LandingScreen()
+            LandingScreen(authViewModel = authViewModel, homeViewModel = homeViewModel)
         }
     }
 }

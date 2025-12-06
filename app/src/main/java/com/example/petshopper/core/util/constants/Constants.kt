@@ -45,4 +45,11 @@ object Constants {
         val subtitle = "Inventory is empty for this category.\nPlease check back again later."
     }
 
+    object ProfileOptionTitles {
+        const val accountInfo = "Account Information"
+        const val saved = "Saved"
+        const val notifications = "Notifications"
+        const val aboutApp = "About"
+        const val logout = "Logout"
+    }
 }
