@@ -30,10 +30,15 @@ fun AppNavigation(
     val navController = rememberNavController()
     val authState by authViewModel.state.collectAsState()
 
+    if (authState.isLoadingSplash) { return }
+    val startScreen = if (authState.isLoggedIn) Screen.Home.route else Screen.Login.route
+
     LaunchedEffect(authState.isLoggedIn) {
         if (authState.isLoggedIn) {
-            navController.navigate(Screen.Home.route) {
-                popUpTo(Screen.Login.route) { inclusive = true }
+            if(navController.currentDestination?.route != Screen.Home.route){
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                }
             }
         } else {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
@@ -48,7 +53,7 @@ fun AppNavigation(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = startScreen
     ) {
         composable(Screen.Login.route) {
             LoginScreen(

@@ -129,14 +129,16 @@ class AuthViewModel @Inject constructor(
                 updateState {
                     it.copy(
                         currentUser = user,
-                        isLoggedIn = true
+                        isLoggedIn = true,
+                        isLoadingSplash = false
                     )
                 }
             } else {
                 updateState {
                     it.copy(
                         currentUser = null,
-                        isLoggedIn = false
+                        isLoggedIn = false,
+                        isLoadingSplash = false
                     )
                 }
             }

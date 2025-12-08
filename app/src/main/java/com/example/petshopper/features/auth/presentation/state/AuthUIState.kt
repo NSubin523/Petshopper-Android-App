@@ -14,7 +14,8 @@ data class AuthUiState(
     val loginState: LoginUiState = UiState.Initial,
     val currentUser: UserModel? = null,
     val isLoggedIn: Boolean = false,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isLoadingSplash: Boolean = true,
 ) {
     /**
      * Helper to check if we're in an error state

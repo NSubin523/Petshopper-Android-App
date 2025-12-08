@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Background color of the splash screen (match your app brand) -->
+        <item name="windowSplashScreenBackground">@color/purple_200</item>
+
+        <!-- Your App Icon (or a specific splash logo drawable) -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/baseline_pets_24</item>
+
+        <!-- IMPORTANT: The theme to switch to after splash is done -->
+        <item name="postSplashScreenTheme">@style/Theme.Petshopper</item>
+    </style>
 
     <style name="Theme.Petshopper" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
