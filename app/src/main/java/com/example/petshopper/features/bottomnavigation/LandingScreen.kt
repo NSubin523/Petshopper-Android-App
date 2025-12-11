@@ -13,9 +13,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import com.example.petshopper.core.util.constants.Constants
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
@@ -32,9 +32,10 @@ enum class BottomTab(val label: String, val icon: ImageVector) {
 @Composable
 fun LandingScreen(
     authViewModel: AuthViewModel,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    onNavigateToAccountInfoScreen: () -> Unit
 ) {
-    var currentTab by remember { mutableStateOf(BottomTab.Home) }
+    var currentTab by rememberSaveable { mutableStateOf(BottomTab.Home) }
 
     Scaffold(
         bottomBar = {
@@ -69,7 +70,7 @@ fun LandingScreen(
             }
             BottomTab.Profile -> {
                 Box(modifier = Modifier.padding(innerPadding)) {
-                    ProfileScreen(authViewModel = authViewModel)
+                    ProfileScreen(authViewModel = authViewModel, onNavigateToAccountInfo = onNavigateToAccountInfoScreen)
                 }
             }
         }

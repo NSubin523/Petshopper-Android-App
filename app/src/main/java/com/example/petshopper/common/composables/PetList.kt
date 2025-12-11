@@ -28,7 +28,7 @@ fun PetGrid(
 ) {
     LazyVerticalGrid(
         state = listState,
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Adaptive(160.dp),
         contentPadding = PaddingValues(
             start = 16.dp,
             end = 16.dp,
@@ -43,7 +43,7 @@ fun PetGrid(
         }
 
         if (isPaginating) {
-            item(span = { GridItemSpan(2) }) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

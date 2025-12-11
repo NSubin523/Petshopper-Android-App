@@ -31,11 +31,15 @@ import com.example.petshopper.features.bottomnavigation.profile.domain.model.Pro
 
 @Composable
 fun ProfileScreen(
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    onNavigateToAccountInfo: () -> Unit
 ){
     val settingOptions = remember {
         ProfileOptionsFactory.getOptions(
-            {}, {}, {}, {},
+            onNavigateToAccountInfo,
+            {},
+            {},
+            {},
             { authViewModel.onAction(AuthAction.Logout) }
         )
     }

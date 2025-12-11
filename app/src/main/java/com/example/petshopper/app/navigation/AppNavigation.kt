@@ -12,6 +12,7 @@ import com.example.petshopper.features.auth.presentation.screen.LoginScreen
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.petshopper.features.bottomnavigation.LandingScreen
 import com.example.petshopper.features.bottomnavigation.home.presentation.viewmodel.HomeViewModel
+import com.example.petshopper.features.bottomnavigation.profile.presentation.screen.AccountInformationScreen
 import com.example.petshopper.features.register.presentation.screen.RegisterScreen
 import com.example.petshopper.features.register.presentation.viewmodel.CreateUserViewModel
 
@@ -19,6 +20,7 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Home : Screen("home")
     object Register : Screen("register")
+    object AccountInfo : Screen("account_information")
 }
 
 @Composable
@@ -81,7 +83,23 @@ fun AppNavigation(
         }
 
         composable(Screen.Home.route) {
-            LandingScreen(authViewModel = authViewModel, homeViewModel = homeViewModel)
+            LandingScreen(
+                authViewModel = authViewModel,
+                homeViewModel = homeViewModel,
+                onNavigateToAccountInfoScreen = {
+                    navController.navigate(Screen.AccountInfo.route)
+                }
+            )
+        }
+
+        composable(Screen.AccountInfo.route) {
+            AccountInformationScreen(
+                authViewModel = authViewModel,
+                onBackClick = { navController.popBackStack() },
+                onFieldClick = { field ->
+
+                }
+            )
         }
     }
 }
