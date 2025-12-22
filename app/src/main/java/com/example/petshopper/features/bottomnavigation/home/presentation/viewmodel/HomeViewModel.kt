@@ -1,10 +1,10 @@
 package com.example.petshopper.features.bottomnavigation.home.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.petshopper.core.presentation.BaseViewModel
+import com.example.petshopper.core.presentation.Resource
 import com.example.petshopper.core.util.constants.Constants
-import com.example.petshopper.features.bottomnavigation.home.domain.mapper.CategoryMapper
+import com.example.petshopper.features.bottomnavigation.home.domain.model.Categories
 import com.example.petshopper.features.bottomnavigation.home.domain.usecase.CategoryUseCase
 import com.example.petshopper.features.bottomnavigation.home.domain.usecase.InventoryUseCase
 import com.example.petshopper.features.bottomnavigation.home.presentation.state.HomeAction
@@ -55,26 +55,43 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadCategories() = launchAsync(onError = { error ->
-        updateState { it.copy(isLoading = false, error = error.message) }
-    }) {
-        updateState { it.copy(isLoading = true, error = null) }
+    private fun loadCategories() {
+        viewModelScope.launch {
+            categoryUseCase().collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        updateState { it.copy(isLoading = true, error = null) }
+                    }
+                    is Resource.Success -> {
+                        val categories = result.data ?: emptyList()
+                        handleCategoriesLoaded(categories)
+                    }
+                    is Resource.Error -> {
+                        val cachedCategories = result.data ?: emptyList()
 
-        val response = categoryUseCase()
-        val categories = response.map {
-            CategoryMapper.toEntity(it)
+                        updateState { it.copy(isLoading = false, error = result.message, categories = cachedCategories) }
+
+                        if(cachedCategories.isNotEmpty()){
+                            handleCategoriesLoaded(cachedCategories)
+                        }
+                    }
+                }
+            }
         }
-        val firstPetId = categories.firstOrNull()?.id
+    }
 
+    private fun handleCategoriesLoaded(categories: List<Categories>){
         updateState { current ->
             current.copy(
                 isLoading = false,
                 categories = categories,
-                selectedCategoryId = firstPetId
+                selectedCategoryId = current.selectedCategoryId ?: categories.firstOrNull()?.id
             )
         }
 
-        selectedCategoryFlow.value = firstPetId
+        if(currentState.selectedCategoryId == null && categories.isNotEmpty()){
+            selectedCategoryFlow.value = categories.first().id
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -83,30 +100,42 @@ class HomeViewModel @Inject constructor(
             selectedCategoryFlow
                 .filterNotNull()
                 .flatMapLatest { categoryUuid ->
-                    flow {
-                        updateState {
-                            it.copy(
-                                isPetLoading = true,
-                                currentPage = Constants.DEFAULT_PAGE_START,
-                                pageEndReached = false,
-                                pets = emptyList()
-                            )
+                    inventoryUseCase(categoryUuid, Constants.DEFAULT_PAGE_START)
+                }
+                .collect { result ->
+                    when(result){
+                        is Resource.Loading -> {
+                            updateState {
+                                it.copy(
+                                    isPetLoading = true,
+                                    currentPage = Constants.DEFAULT_PAGE_START,
+                                    pageEndReached = false,
+                                    pets = emptyList()
+                                )
+                            }
                         }
-                        try {
-                            val items = inventoryUseCase(categoryUuid, Constants.DEFAULT_PAGE_START)
-                            emit(items)
-                        } catch (ex: Exception){
-                            Log.d("Error loading pets", ex.message.toString())
-                            emit(emptyList())
+                        is Resource.Success -> {
+                            val pets = result.data ?: emptyList()
+                            updateState {
+                                it.copy(
+                                    isPetLoading = false,
+                                    pets = pets,
+                                    pageEndReached = pets.size < pageSize
+                                )
+                            }
+                        }
+                        is Resource.Error -> {
+                            val cachedPets = result.data ?: emptyList()
+                            updateState {
+                                it.copy(
+                                    isPetLoading = false,
+                                    error = result.message,
+                                    pets = cachedPets,
+                                    pageEndReached = cachedPets.size < pageSize
+                                )
+                            }
                         }
                     }
-                }
-                .collect { pets ->
-                    updateState { it.copy(
-                        isPetLoading =  false,
-                        pets = pets,
-                        pageEndReached = pets.size < pageSize
-                    ) }
                 }
         }
     }
@@ -115,21 +144,33 @@ class HomeViewModel @Inject constructor(
         val selectedCategoryId = currentState.selectedCategoryId ?: return
 
         viewModelScope.launch {
-            updateState { it.copy(isRefreshing = true) }
-            try {
-                val pets = inventoryUseCase(selectedCategoryId, Constants.DEFAULT_PAGE_START)
-                updateState {
-                    it.copy(
-                        isRefreshing = false,
-                        pets = pets,
-                        currentPage = Constants.DEFAULT_PAGE_START,
-                        pageEndReached = pets.size < pageSize
-                    )
-                }
-            } catch (e: Exception) {
-                Log.d("Error while refreshing inventory page", e.message.toString())
-                updateState { it.copy(isRefreshing = false, error = e.message) }
-            }
+            inventoryUseCase(selectedCategoryId, Constants.DEFAULT_PAGE_START)
+                .collect { result ->
+                    when(result) {
+                        is Resource.Loading -> {
+                            updateState { it.copy(isRefreshing = true) }
+                        }
+                        is Resource.Success -> {
+                            val pets = result.data ?: emptyList()
+                            updateState {
+                                it.copy(
+                                    isRefreshing = false,
+                                    pets = pets,
+                                    currentPage = Constants.DEFAULT_PAGE_START,
+                                    pageEndReached = pets.size < pageSize
+                                )
+                            }
+                        }
+                        is Resource.Error -> {
+                            updateState {
+                                it.copy(
+                                    isRefreshing = false,
+                                    error = result.message
+                                )
+                            }
+                        }
+                    }
+                 }
         }
     }
 
@@ -139,23 +180,29 @@ class HomeViewModel @Inject constructor(
 
         if(currentState.isPaginating || currentState.pageEndReached) return
 
-        viewModelScope.launch {
-            updateState { it.copy(isPaginating = true) }
-            try {
-                val nextPage = currentState.currentPage + 1
-                val newPets = inventoryUseCase(categoryId = categoryId, page = nextPage)
+        val nextPage = currentState.currentPage + 1
 
-                updateState { state ->
-                    state.copy(
-                        isPaginating = false,
-                        currentPage = nextPage,
-                        pets = state.pets + newPets,
-                        pageEndReached = newPets.size < pageSize
-                    )
+        viewModelScope.launch {
+            inventoryUseCase(categoryId, nextPage).collect { result ->
+                when(result){
+                    is Resource.Loading -> {
+                        updateState { it.copy(isPaginating = true) }
+                    }
+                    is Resource.Success -> {
+                        val newPets = result.data ?: emptyList()
+                        updateState { state ->
+                            state.copy(
+                                isPaginating = false,
+                                currentPage = nextPage,
+                                pets = state.pets + newPets,
+                                pageEndReached = newPets.size < pageSize
+                            )
+                        }
+                    }
+                    is Resource.Error -> {
+                        updateState { it.copy(isPaginating = false, error = result.message) }
+                    }
                 }
-            }
-            catch (ex: Exception){
-                updateState { it.copy(isPaginating = false, error = ex.message) }
             }
         }
     }

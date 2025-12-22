@@ -79,6 +79,11 @@ dependencies {
     // --- DataStore for Preferences (JWT, login state, etc.) ---
     implementation(libs.androidx.datastore)
 
+    // --- Room ---
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx) // For Coroutines/Flow support
+    ksp(libs.androidx.room.compiler)
+
     // --- Coil for image loading ---
     implementation(libs.coil.compose)
 

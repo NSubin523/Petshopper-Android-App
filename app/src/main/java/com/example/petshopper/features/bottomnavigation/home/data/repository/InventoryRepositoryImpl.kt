@@ -1,27 +1,35 @@
 package com.example.petshopper.features.bottomnavigation.home.data.repository
 
-import com.example.petshopper.core.di.IoDispatcher
 import com.example.petshopper.features.bottomnavigation.home.data.api.InventoryApiService
+import com.example.petshopper.features.bottomnavigation.home.data.local.dao.InventoryDao
+import com.example.petshopper.features.bottomnavigation.home.data.local.entity.toEntity
 import com.example.petshopper.features.bottomnavigation.home.domain.mapper.PetMapper
 import com.example.petshopper.features.bottomnavigation.home.domain.model.Pet
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class InventoryRepositoryImpl @Inject constructor(
     private val apiService: InventoryApiService,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    private val inventoryDao: InventoryDao,
 ): InventoryRepository {
-    override suspend fun getInventoryByCategory(
+    override suspend fun getInventoryByCategoryFromNetwork(
         categoryId: String,
         page: Int
     ): List<Pet> {
-        return withContext(ioDispatcher){
-            apiService
-                .getInventoryByCategory(categoryId = categoryId, page = page)
-                .items.map { item ->
-                    PetMapper.toDomain(item)
-                }
-        }
+        return apiService.getInventoryByCategory(categoryId = categoryId, page = page)
+            .items.map { dto -> PetMapper.toDomain(dto) }
+    }
+
+    override suspend fun getInventoryFromLocal(categoryId: String): List<Pet> {
+        return inventoryDao.getPetsByCategory(categoryId = categoryId)
+            .map { it.toDomain() }
+    }
+
+    override suspend fun saveInventoryToLocal(
+        categoryId: String,
+        pets: List<Pet>
+    ) {
+        val entities = pets.map { it.toEntity(categoryId = categoryId) }
+
+        inventoryDao.insertPets(entities)
     }
 }

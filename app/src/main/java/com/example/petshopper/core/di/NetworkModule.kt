@@ -1,7 +1,11 @@
 package com.example.petshopper.core.di
 
 import android.content.Context
+import androidx.room.Room
+import com.example.petshopper.app.AppDatabase
 import com.example.petshopper.core.util.constants.Constants
+import com.example.petshopper.features.bottomnavigation.home.data.local.dao.CategoryDao
+import com.example.petshopper.features.bottomnavigation.home.data.local.dao.InventoryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,4 +45,24 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideApplicationContext(@ApplicationContext context: Context) : Context = context
+
+    @Provides
+    @Singleton
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "petshopper_db"
+        ).build()
+    }
+
+    @Provides
+    fun provideCategoryDao(database: AppDatabase): CategoryDao {
+        return database.categoryDao()
+    }
+
+    @Provides
+    fun provideInventoryDao(database: AppDatabase): InventoryDao {
+        return database.inventoryDao()
+    }
 }
