@@ -81,15 +81,18 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun handleCategoriesLoaded(categories: List<Categories>){
+        val shouldAutoSelect = currentState.selectedCategoryId == null
+        val firstCategoryId = categories.firstOrNull()?.id
+
         updateState { current ->
             current.copy(
                 isLoading = false,
                 categories = categories,
-                selectedCategoryId = current.selectedCategoryId ?: categories.firstOrNull()?.id
+                selectedCategoryId = current.selectedCategoryId ?: firstCategoryId
             )
         }
 
-        if(currentState.selectedCategoryId == null && categories.isNotEmpty()){
+        if(shouldAutoSelect && firstCategoryId != null){
             selectedCategoryFlow.value = categories.first().id
         }
     }
@@ -119,6 +122,8 @@ class HomeViewModel @Inject constructor(
                             updateState {
                                 it.copy(
                                     isPetLoading = false,
+                                    isRefreshing = false,
+                                    isPaginating = false,
                                     pets = pets,
                                     pageEndReached = pets.size < pageSize
                                 )
@@ -129,6 +134,8 @@ class HomeViewModel @Inject constructor(
                             updateState {
                                 it.copy(
                                     isPetLoading = false,
+                                    isRefreshing = false,
+                                    isPaginating = false,
                                     error = result.message,
                                     pets = cachedPets,
                                     pageEndReached = cachedPets.size < pageSize
@@ -144,33 +151,8 @@ class HomeViewModel @Inject constructor(
         val selectedCategoryId = currentState.selectedCategoryId ?: return
 
         viewModelScope.launch {
-            inventoryUseCase(selectedCategoryId, Constants.DEFAULT_PAGE_START)
-                .collect { result ->
-                    when(result) {
-                        is Resource.Loading -> {
-                            updateState { it.copy(isRefreshing = true) }
-                        }
-                        is Resource.Success -> {
-                            val pets = result.data ?: emptyList()
-                            updateState {
-                                it.copy(
-                                    isRefreshing = false,
-                                    pets = pets,
-                                    currentPage = Constants.DEFAULT_PAGE_START,
-                                    pageEndReached = pets.size < pageSize
-                                )
-                            }
-                        }
-                        is Resource.Error -> {
-                            updateState {
-                                it.copy(
-                                    isRefreshing = false,
-                                    error = result.message
-                                )
-                            }
-                        }
-                    }
-                 }
+            updateState { it.copy(isRefreshing = true) }
+            inventoryUseCase(selectedCategoryId, Constants.DEFAULT_PAGE_START).collect()
         }
     }
 
@@ -183,25 +165,14 @@ class HomeViewModel @Inject constructor(
         val nextPage = currentState.currentPage + 1
 
         viewModelScope.launch {
+            updateState { it.copy(isPaginating = true) }
+
             inventoryUseCase(categoryId, nextPage).collect { result ->
-                when(result){
-                    is Resource.Loading -> {
-                        updateState { it.copy(isPaginating = true) }
-                    }
-                    is Resource.Success -> {
-                        val newPets = result.data ?: emptyList()
-                        updateState { state ->
-                            state.copy(
-                                isPaginating = false,
-                                currentPage = nextPage,
-                                pets = state.pets + newPets,
-                                pageEndReached = newPets.size < pageSize
-                            )
-                        }
-                    }
-                    is Resource.Error -> {
-                        updateState { it.copy(isPaginating = false, error = result.message) }
-                    }
+                if (result is Resource.Success) {
+                    updateState { it.copy(currentPage = nextPage) }
+                }
+                if (result is Resource.Error) {
+                    updateState { it.copy(isPaginating = false, error = result.message) }
                 }
             }
         }

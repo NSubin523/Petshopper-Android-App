@@ -8,9 +8,11 @@ import com.example.petshopper.features.bottomnavigation.home.data.repository.Inv
 import com.example.petshopper.features.bottomnavigation.home.domain.model.Pet
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
 class InventoryUseCase @Inject constructor(
@@ -23,52 +25,25 @@ class InventoryUseCase @Inject constructor(
         categoryId: String,
         page: Int = Constants.DEFAULT_PAGE_START
     ): Flow<Resource<List<Pet>>> = flow {
-        emit(Resource.Loading())
+        val dbSource = inventoryRepository.getInventoryFromLocal(categoryId)
 
-        val isFirstPage = page == Constants.DEFAULT_PAGE_START
-        var localPets: List<Pet> = emptyList()
-
-        if(isFirstPage){
-            localPets = inventoryRepository.getInventoryFromLocal(categoryId = categoryId)
-            if(localPets.isNotEmpty()){
-                emit(Resource.Success(localPets))
-            }
-        }
-
-        if(!networkHelper.isNetworkAvailable()){
-            if(isFirstPage){
-                emitPetsOrError(localPets, "No Internet connection and no local data")
+        emitAll(dbSource.map { pets ->
+            if(pets.isNotEmpty()){
+                Resource.Success(pets)
             } else {
-                emit(Resource.Error("No Internet Connection.."))
+                Resource.Loading()
             }
-        }
-
-        try {
-            val remotePets = inventoryRepository.getInventoryByCategoryFromNetwork(
-                categoryId = categoryId,
-                page = page
-            )
-
-            inventoryRepository.saveInventoryToLocal(
-                categoryId = categoryId,
-                pets = remotePets
-            )
-            emit(Resource.Success(remotePets))
-
-        } catch (ex: Exception){
-            if(isFirstPage){
-                emitPetsOrError(localPets, ex.localizedMessage.toString())
+        }.onStart {
+            if(networkHelper.isNetworkAvailable()){
+                try {
+                    val remotePets = inventoryRepository.getInventoryByCategoryFromNetwork(categoryId, page)
+                    inventoryRepository.saveInventoryToLocal(categoryId, remotePets)
+                } catch (ex: Exception){
+                    emit(Resource.Error("Failed to update inventory :  ${ex.localizedMessage}"))
+                }
             } else {
-                emit(Resource.Error(ex.localizedMessage.toString()))
+                emit(Resource.Error("No Internet Connection"))
             }
-        }
+        })
     }.flowOn(ioDispatcher)
-
-    private suspend fun FlowCollector<Resource<List<Pet>>>.emitPetsOrError(pets: List<Pet>, errorMessage: String){
-        if(pets.isNotEmpty()){
-            emit(Resource.Error(errorMessage, pets))
-        } else {
-            emit(Resource.Error(errorMessage))
-        }
-    }
 }
