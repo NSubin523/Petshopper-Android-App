@@ -38,7 +38,7 @@ fun PetGrid(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(pets) { pet ->
+        items(pets, key = { it.id }) { pet ->
             UberStylePetCard(pet, onPetClick)
         }
 

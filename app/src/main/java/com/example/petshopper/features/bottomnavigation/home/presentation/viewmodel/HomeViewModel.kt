@@ -169,10 +169,10 @@ class HomeViewModel @Inject constructor(
 
             inventoryUseCase(categoryId, nextPage).collect { result ->
                 if (result is Resource.Success) {
-                    updateState { it.copy(currentPage = nextPage) }
+                    updateState { it.copy(currentPage = nextPage, isPaginating = false, isPetLoading = false) }
                 }
                 if (result is Resource.Error) {
-                    updateState { it.copy(isPaginating = false, error = result.message) }
+                    updateState { it.copy(isPaginating = false, error = result.message, isPetLoading = false) }
                 }
             }
         }
