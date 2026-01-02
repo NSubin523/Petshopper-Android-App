@@ -1,6 +1,10 @@
 package com.example.petshopper.features.bottomnavigation
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -18,10 +22,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import com.example.petshopper.core.util.constants.Constants
+import com.example.petshopper.features.auth.presentation.action.AuthAction
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.petshopper.features.bottomnavigation.home.presentation.screen.HomeScreen
 import com.example.petshopper.features.bottomnavigation.home.presentation.viewmodel.HomeViewModel
 import com.example.petshopper.features.bottomnavigation.profile.presentation.screen.ProfileScreen
+import com.example.petshopper.features.bottomnavigation.profile.presentation.state.ProfileUiEvent
 
 enum class BottomTab(val label: String, val icon: ImageVector) {
     Home(Constants.ScreenLabels.Home.toString(), Icons.Default.Home),
@@ -58,19 +64,31 @@ fun LandingScreen(
             }
         }
     ) { innerPadding ->
-        when (currentTab) {
-            BottomTab.Home -> {
-                HomeScreen(
-                    modifier = Modifier.padding(innerPadding),
-                    vm = homeViewModel
-                )
-            }
-            BottomTab.Cart -> {
-                Box(modifier = Modifier.padding(innerPadding)) { Text("Cart Coming Soon") }
-            }
-            BottomTab.Profile -> {
-                Box(modifier = Modifier.padding(innerPadding)) {
-                    ProfileScreen(authViewModel = authViewModel, onNavigateToAccountInfo = onNavigateToAccountInfoScreen)
+        Crossfade(
+            targetState = currentTab,
+            label = "TabTransition",
+            animationSpec = tween(durationMillis = 400),
+            modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding).fillMaxSize()
+        ) {currentTab ->
+            when (currentTab) {
+                BottomTab.Home -> {
+                    HomeScreen(
+                        vm = homeViewModel
+                    )
+                }
+                BottomTab.Cart -> {
+                    Box(modifier = Modifier.padding(innerPadding)) { Text("Cart Coming Soon") }
+                }
+                BottomTab.Profile -> {
+                        ProfileScreen(
+                            authViewModel = authViewModel,
+                            onEvent = { event ->
+                                when (event) {
+                                    ProfileUiEvent.OnAccountInfoClicked -> onNavigateToAccountInfoScreen()
+                                    ProfileUiEvent.OnLogoutClicked -> authViewModel.onAction(AuthAction.Logout)
+                                }
+                            }
+                        )
                 }
             }
         }

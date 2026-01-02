@@ -25,22 +25,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.petshopper.common.composables.ProfileTab
-import com.example.petshopper.features.auth.presentation.action.AuthAction
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.petshopper.features.bottomnavigation.profile.domain.model.ProfileOptionsFactory
+import com.example.petshopper.features.bottomnavigation.profile.presentation.state.ProfileUiEvent
 
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
-    onNavigateToAccountInfo: () -> Unit
+    onEvent: (ProfileUiEvent) -> Unit
 ){
     val settingOptions = remember {
         ProfileOptionsFactory.getOptions(
-            onNavigateToAccountInfo,
+            {onEvent(ProfileUiEvent.OnAccountInfoClicked)},
             {},
             {},
             {},
-            { authViewModel.onAction(AuthAction.Logout) }
+            {onEvent(ProfileUiEvent.OnLogoutClicked)}
         )
     }
 
