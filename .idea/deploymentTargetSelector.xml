@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-01-03T17:59:25.765217900Z">
+        <DropdownSelection timestamp="2026-01-03T21:00:42.270063100Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\neosu\.android\avd\Pixel_6a.avd" />
@@ -15,12 +15,12 @@
           <targets>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\neosu\.android\avd\Medium_Tablet.avd" />
+                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\neosu\.android\avd\Pixel_6a.avd" />
               </handle>
             </Target>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\neosu\.android\avd\Pixel_6a.avd" />
+                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\neosu\.android\avd\Medium_Tablet.avd" />
               </handle>
             </Target>
           </targets>

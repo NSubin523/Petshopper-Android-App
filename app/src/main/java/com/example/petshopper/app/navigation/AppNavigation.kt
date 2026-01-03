@@ -1,9 +1,11 @@
 package com.example.petshopper.app.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -53,7 +55,8 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = startScreen
+        startDestination = startScreen,
+        modifier = Modifier.fillMaxSize()
     ) {
         composable(Screen.Login.route) {
             LoginRoute(
