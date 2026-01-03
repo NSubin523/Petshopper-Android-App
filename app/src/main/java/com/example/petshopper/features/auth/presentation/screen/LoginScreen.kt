@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -141,14 +140,6 @@ fun LoginForm(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = false,
-                    onCheckedChange = {},
-                    enabled = !isLoading
-                )
-                Text("Remember me")
-            }
             TextButton(
                 onClick = { /* TODO: Implement forgot password */ },
                 enabled = !isLoading

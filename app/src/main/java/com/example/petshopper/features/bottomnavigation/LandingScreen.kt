@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.petshopper.core.util.constants.Constants
 import com.example.petshopper.features.auth.presentation.action.AuthAction
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
@@ -38,10 +39,12 @@ enum class BottomTab(val label: String, val icon: ImageVector) {
 @Composable
 fun LandingScreen(
     authViewModel: AuthViewModel,
-    homeViewModel: HomeViewModel,
-    onNavigateToAccountInfoScreen: () -> Unit
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    onNavigate: (LandingUiEvent) -> Unit
 ) {
     var currentTab by rememberSaveable { mutableStateOf(BottomTab.Home) }
+
+    val authState by authViewModel.state.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -80,15 +83,15 @@ fun LandingScreen(
                     Box(modifier = Modifier.padding(innerPadding)) { Text("Cart Coming Soon") }
                 }
                 BottomTab.Profile -> {
-                        ProfileScreen(
-                            authViewModel = authViewModel,
-                            onEvent = { event ->
-                                when (event) {
-                                    ProfileUiEvent.OnAccountInfoClicked -> onNavigateToAccountInfoScreen()
-                                    ProfileUiEvent.OnLogoutClicked -> authViewModel.onAction(AuthAction.Logout)
-                                }
+                    ProfileScreen(
+                        isLoading = authState.isLoading,
+                        onEvent = { event ->
+                            when(event){
+                                is ProfileUiEvent.OnAccountInfoClicked -> onNavigate(LandingUiEvent.OnNavigateToAccountInfoScreen)
+                                is ProfileUiEvent.OnLogoutClicked -> authViewModel.onAction(AuthAction.Logout)
                             }
-                        )
+                        }
+                    )
                 }
             }
         }

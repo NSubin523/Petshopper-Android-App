@@ -11,10 +11,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.petshopper.features.auth.presentation.screen.LoginScreen
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.petshopper.features.bottomnavigation.LandingScreen
-import com.example.petshopper.features.bottomnavigation.home.presentation.viewmodel.HomeViewModel
+import com.example.petshopper.features.bottomnavigation.LandingUiEvent
 import com.example.petshopper.features.bottomnavigation.profile.presentation.screen.AccountInformationScreen
 import com.example.petshopper.features.register.presentation.screen.RegisterScreen
-import com.example.petshopper.features.register.presentation.viewmodel.CreateUserViewModel
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -24,12 +23,10 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun AppNavigation(
-    authViewModel: AuthViewModel = hiltViewModel(),
-    homeViewModel: HomeViewModel = hiltViewModel(),
-    registerUserViewModel: CreateUserViewModel = hiltViewModel()
-) {
+fun AppNavigation() {
+    val authViewModel: AuthViewModel = hiltViewModel()
     val navController = rememberNavController()
+
     val authState by authViewModel.state.collectAsState()
 
     if (authState.isLoadingSplash) { return }
@@ -73,7 +70,6 @@ fun AppNavigation(
 
         composable(Screen.Register.route) {
             RegisterScreen(
-                viewModel = registerUserViewModel,
                 onRegistrationComplete = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
@@ -85,9 +81,10 @@ fun AppNavigation(
         composable(Screen.Home.route) {
             LandingScreen(
                 authViewModel = authViewModel,
-                homeViewModel = homeViewModel,
-                onNavigateToAccountInfoScreen = {
-                    navController.navigate(Screen.AccountInfo.route)
+                onNavigate = { event ->
+                    when(event){
+                        LandingUiEvent.OnNavigateToAccountInfoScreen -> navController.navigate(Screen.AccountInfo.route)
+                    }
                 }
             )
         }

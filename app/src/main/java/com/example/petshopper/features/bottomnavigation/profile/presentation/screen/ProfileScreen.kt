@@ -17,21 +17,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.petshopper.common.composables.ProfileTab
-import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.petshopper.features.bottomnavigation.profile.domain.model.ProfileOptionsFactory
 import com.example.petshopper.features.bottomnavigation.profile.presentation.state.ProfileUiEvent
 
 @Composable
 fun ProfileScreen(
-    authViewModel: AuthViewModel,
+    isLoading: Boolean,
     onEvent: (ProfileUiEvent) -> Unit
 ){
     val settingOptions = remember {
@@ -43,8 +40,6 @@ fun ProfileScreen(
             {onEvent(ProfileUiEvent.OnLogoutClicked)}
         )
     }
-
-    val state by authViewModel.state.collectAsState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -89,7 +84,7 @@ fun ProfileScreen(
         }
     }
 
-    if(state.isLoading){
+    if(isLoading){
         Box(
             modifier = Modifier
                 .fillMaxSize()
