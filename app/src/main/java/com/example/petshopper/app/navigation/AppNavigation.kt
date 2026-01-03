@@ -8,10 +8,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.petshopper.features.auth.presentation.screen.LoginScreen
+import com.example.petshopper.features.auth.presentation.screen.route.LoginRoute
 import com.example.petshopper.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.petshopper.features.bottomnavigation.LandingScreen
-import com.example.petshopper.features.bottomnavigation.LandingUiEvent
+import com.example.petshopper.app.navigation.event.LandingUiEvent
+import com.example.petshopper.app.navigation.event.LoginNavEvent
 import com.example.petshopper.features.bottomnavigation.profile.presentation.screen.AccountInformationScreen
 import com.example.petshopper.features.register.presentation.screen.RegisterScreen
 
@@ -55,15 +56,25 @@ fun AppNavigation() {
         startDestination = startScreen
     ) {
         composable(Screen.Login.route) {
-            LoginScreen(
+            LoginRoute(
                 authViewModel = authViewModel,
-                onLoginSuccess = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                onNavigate = { event ->
+                    when(event) {
+                        LoginNavEvent.OnLoginSuccess -> {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                        }
+                        LoginNavEvent.OnSignUpClicked -> {
+                            navController.navigate(Screen.Register.route)
+                        }
+                        LoginNavEvent.OnForgotPasswordClicked -> {
+
+                        }
+                        LoginNavEvent.OnGoogleSignInClicked -> {
+
+                        }
                     }
-                },
-                onSignUpClick = {
-                    navController.navigate(Screen.Register.route)
                 }
             )
         }

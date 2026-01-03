@@ -1,4 +1,4 @@
-package com.example.petshopper.features.bottomnavigation
+package com.example.petshopper.app.navigation.event
 
 /**
  * All UI Events for landing screen will go here
