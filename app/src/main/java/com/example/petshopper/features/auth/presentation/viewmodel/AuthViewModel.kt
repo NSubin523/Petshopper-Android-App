@@ -1,11 +1,15 @@
 package com.example.petshopper.features.auth.presentation.viewmodel
 
+import androidx.lifecycle.viewModelScope
+import com.example.petshopper.core.domain.model.UserModel
 import com.example.petshopper.core.presentation.BaseViewModel
+import com.example.petshopper.core.util.constants.IsEmulator
 import com.example.petshopper.core.util.constants.state.UiState
 import com.example.petshopper.features.auth.domain.usecase.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.example.petshopper.features.auth.data.dto.LoginRequestDto
+import com.example.petshopper.features.auth.data.dto.LoginResponseDto
 import com.example.petshopper.features.auth.data.dto.LogoutRequestDto
 import com.example.petshopper.features.auth.domain.usecase.CheckLoginStatusUseCase
 import com.example.petshopper.features.auth.domain.usecase.GetCurrentUserUseCase
@@ -13,6 +17,7 @@ import com.example.petshopper.features.auth.domain.usecase.LogoutUseCase
 import com.example.petshopper.features.auth.presentation.action.AuthAction
 import com.example.petshopper.features.auth.presentation.state.AuthUiState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel for Auth feature following MVI pattern
@@ -31,14 +36,19 @@ class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val checkLoginStatusUseCase: CheckLoginStatusUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    @param:IsEmulator private val isEmulator: Boolean
 ) : BaseViewModel<AuthUiState, AuthAction>(
     initialState = AuthUiState()
 ) {
 
     init {
         // Check login status on initialization
-        onAction(AuthAction.CheckLoginStatus)
+        if(isEmulator){
+            handleEmulatorByPass()
+        } else {
+            onAction(AuthAction.CheckLoginStatus)
+        }
     }
 
     /**
@@ -151,6 +161,42 @@ class AuthViewModel @Inject constructor(
     private fun handleResetLoginState() {
         updateState {
             it.copy(loginState = UiState.Initial)
+        }
+    }
+
+    /**
+     * Handle login by pass if the device is a registered emulator
+     */
+    private fun handleEmulatorByPass(){
+        if (isEmulator) {
+            viewModelScope.launch {
+                delay(500)
+
+                val mockedUser = UserModel(
+                    uuid = "1234sdfKNSNdffdfa1223",
+                    firstName = "Emulator",
+                    lastName = "User",
+                    email = "emulator@android.com",
+                    phoneNumber = "0000000000",
+                    createdAt = "2026-01-01 11:59:00"
+                )
+
+                // 2. Force the state to Logged In
+                updateState {
+                    it.copy(
+                        isLoggedIn = true,
+                        isLoadingSplash = false,
+                        currentUser = mockedUser,
+                        loginState = UiState.Success(
+                            LoginResponseDto(
+                                user = mockedUser,
+                                "mock_emulator_jwt_token",
+                                refreshToken = ""
+                            )
+                        )
+                    )
+                }
+            }
         }
     }
 }
